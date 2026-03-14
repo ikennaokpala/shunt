@@ -9,8 +9,8 @@
 //! ## Quick Start (Email)
 //!
 //! ```rust,no_run
-//! use shunt::prelude::*;
-//! use shunt::lettre::{AsyncTransport, Message};
+//! use shunt_rs::prelude::*;
+//! use shunt_rs::lettre::{AsyncTransport, Message};
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! let config = ShuntConfig::default();

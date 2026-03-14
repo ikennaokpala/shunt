@@ -6,6 +6,7 @@ members = [
     "crates/shunt_sms",
     "crates/shunt_web",
     "shunt",
+    "sample_app",
 ]
 
 [workspace.package]
