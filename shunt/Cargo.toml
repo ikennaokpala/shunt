@@ -1,5 +1,5 @@
 [package]
-name = "shunt"
+name = "shunt-rs"
 description = "Intercept and preview outbound emails and SMS during development"
 version.workspace = true
 edition.workspace = true

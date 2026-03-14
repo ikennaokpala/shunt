@@ -12,7 +12,7 @@ members = [
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/ikenna/shunt"
+repository = "https://github.com/ikennaokpala/shunt"
 rust-version = "1.75"
 
 [workspace.dependencies]
