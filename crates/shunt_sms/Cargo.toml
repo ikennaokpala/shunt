@@ -1,0 +1,15 @@
+[package]
+name = "shunt_sms"
+description = "SMS interception for the shunt message preview library"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+shunt_core = { workspace = true }
+open = "5"
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde_json = { workspace = true }

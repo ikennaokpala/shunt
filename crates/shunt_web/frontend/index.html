@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shunt — Message Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --border: #2a2d3a;
+            --text: #e4e4e7;
+            --text-muted: #71717a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --email-badge: #3b82f6;
+            --sms-badge: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-header h1 span {
+            color: var(--accent);
+        }
+
+        .sidebar-header .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .message-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .message-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.15s;
+        }
+
+        .message-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .message-item.active {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .message-item .meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.email { background: var(--email-badge); color: white; }
+        .badge.sms { background: var(--sms-badge); color: white; }
+
+        .message-item .time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .message-item .subject {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .message-item .from {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Content area */
+        .content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .content-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .content-header .details {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 12px;
+            font-size: 13px;
+        }
+
+        .content-header .label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .content-body {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+        }
+
+        .content-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .content-body .text-preview {
+            padding: 24px;
+            white-space: pre-wrap;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .content-body .sms-preview {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .sms-bubble {
+            max-width: 320px;
+            background: var(--accent);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 18px 18px 4px 18px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            padding: 0 24px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .tab:hover { color: var(--text); }
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--sms-badge);
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1><span>&#9654;</span> Shunt</h1>
+                <div class="subtitle">Message Preview <span class="status-dot"></span></div>
+            </div>
+            <div class="message-list" id="messageList">
+                <div class="empty-state">
+                    <div class="icon">&#9993;</div>
+                    <p>No messages yet</p>
+                </div>
+            </div>
+        </div>
+        <div class="content" id="contentArea">
+            <div class="empty-state">
+                <div class="icon">&#8592;</div>
+                <p>Select a message to preview</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let messages = [];
+        let selectedId = null;
+
+        async function fetchMessages() {
+            try {
+                const res = await fetch('/messages');
+                const json = await res.json();
+                messages = json.data || [];
+                renderList();
+                if (selectedId) renderContent(selectedId);
+            } catch (e) {
+                console.error('Failed to fetch messages:', e);
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('messageList');
+            if (messages.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">&#9993;</div><p>No messages yet</p></div>';
+                return;
+            }
+
+            list.innerHTML = messages.map(msg => {
+                const isActive = msg.id === selectedId;
+                const kind = msg.kind;
+                const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const subject = msg.summary.subject || msg.summary.to.join(', ');
+                const from = msg.summary.from;
+
+                return `
+                    <div class="message-item ${isActive ? 'active' : ''}" onclick="selectMessage('${msg.id}')">
+                        <div class="meta">
+                            <span class="badge ${kind}">${kind}</span>
+                            <span class="time">${time}</span>
+                        </div>
+                        <div class="subject">${escapeHtml(subject)}</div>
+                        <div class="from">${escapeHtml(from)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectMessage(id) {
+            selectedId = id;
+            renderList();
+            renderContent(id);
+        }
+
+        function renderContent(id) {
+            const msg = messages.find(m => m.id === id);
+            if (!msg) return;
+
+            const content = document.getElementById('contentArea');
+
+            if (msg.content.type === 'email') {
+                const email = msg.content;
+                const tabs = email.html_body
+                    ? `<div class="tab-bar">
+                        <div class="tab active" onclick="showTab('html', this)">HTML</div>
+                        ${email.text_body ? '<div class="tab" onclick="showTab(\'text\', this)">Plain Text</div>' : ''}
+                        <div class="tab" onclick="showTab('headers', this)">Headers</div>
+                       </div>`
+                    : `<div class="tab-bar">
+                        <div class="tab active" onclick="showTab('text', this)">Plain Text</div>
+                        <div class="tab" onclick="showTab('headers', this)">Headers</div>
+                       </div>`;
+
+                content.innerHTML = `
+                    <div class="content-header">
+                        <h2>${escapeHtml(email.subject)}</h2>
+                        <div class="details">
+                            <span class="label">From</span><span>${escapeHtml(email.from)}</span>
+                            <span class="label">To</span><span>${escapeHtml(email.to.join(', '))}</span>
+                            ${email.cc.length ? `<span class="label">CC</span><span>${escapeHtml(email.cc.join(', '))}</span>` : ''}
+                            ${email.attachments.length ? `<span class="label">Attachments</span><span>${email.attachments.map(a => a.filename).join(', ')}</span>` : ''}
+                        </div>
+                    </div>
+                    ${tabs}
+                    <div class="content-body" id="contentBody">
+                        ${email.html_body
+                            ? `<iframe id="htmlFrame" srcdoc="${escapeAttr(email.html_body)}"></iframe>`
+                            : `<div class="text-preview">${escapeHtml(email.text_body || '')}</div>`
+                        }
+                    </div>
+                `;
+            } else {
+                const sms = msg.content;
+                content.innerHTML = `
+                    <div class="content-header">
+                        <h2>SMS Message</h2>
+                        <div class="details">
+                            <span class="label">From</span><span>${escapeHtml(sms.from)}</span>
+                            <span class="label">To</span><span>${escapeHtml(sms.to)}</span>
+                        </div>
+                    </div>
+                    <div class="content-body">
+                        <div class="sms-preview">
+                            <div class="sms-bubble">${escapeHtml(sms.body)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        window.showTab = function(tab, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const msg = messages.find(m => m.id === selectedId);
+            if (!msg || msg.content.type !== 'email') return;
+            const email = msg.content;
+            const body = document.getElementById('contentBody');
+
+            if (tab === 'html' && email.html_body) {
+                body.innerHTML = `<iframe srcdoc="${escapeAttr(email.html_body)}"></iframe>`;
+            } else if (tab === 'text') {
+                body.innerHTML = `<div class="text-preview">${escapeHtml(email.text_body || '(no plain text body)')}</div>`;
+            } else if (tab === 'headers') {
+                const headers = Object.entries(email.headers || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
+                body.innerHTML = `<div class="text-preview">${escapeHtml(headers || '(no headers)')}</div>`;
+            }
+        };
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function escapeAttr(str) {
+            return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Initial fetch
+        fetchMessages();
+
+        // SSE for live updates
+        const evtSource = new EventSource('/events');
+        evtSource.addEventListener('messages', () => {
+            fetchMessages();
+        });
+
+        evtSource.onerror = () => {
+            // Fallback to polling if SSE fails
+            setInterval(fetchMessages, 3000);
+            evtSource.close();
+        };
+    </script>
+</body>
+</html>

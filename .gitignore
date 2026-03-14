@@ -1,0 +1,10 @@
+/target
+**/*.rs.bk
+Cargo.lock
+tmp/
+.env
+.dev.vars
+*.swp
+*.swo
+*~
+.DS_Store

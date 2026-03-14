@@ -1,0 +1,15 @@
+[package]
+name = "shunt"
+description = "Intercept and preview outbound emails and SMS during development"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+shunt_core = { workspace = true }
+shunt_email = { workspace = true }
+shunt_sms = { workspace = true }
+shunt_web = { workspace = true }
+lettre = { version = "0.11", default-features = false, features = ["builder", "tokio1"] }
